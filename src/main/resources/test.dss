@@ -1,0 +1,155 @@
+/**  
+	ClearFix mixin based on 
+	
+	http://perishablepress.com/press/2009/12/06/new-clearfix-hack 
+*/
+@clearfix = {
+	
+	^:after {
+		clear: both;
+		content: ' ';
+		display: block;
+		font-size: 0;
+		line-height: 0;
+		visibility: hidden;
+		width: 0;
+		height: 0;
+	}
+	
+	* html ^,
+	*:first-child+html ^ {
+		zoom: 1;
+	}
+}
+/**
+	DSS 960 grid module based on http://960.gs/ 
+*/
+/**
+
+General purpose 960 container. Initializes the state for the other mixins, 
+thus needs to be called first.
+
+@columns		number of columns in the layout.
+@column_width	width of one column. 
+@margin			width of one column. 
+*/
+@grid = (@columns = 12, @column_width = 60px, @margin = 20px, @debug = 0) {
+	/** define global variable to store the container width*/
+	@_dss_960_column_width = @column_width;
+	@_dss_960_column_both_margin = @margin;
+	/** Make sure all pixels get accounted for, even on odd margin values */
+	@_dss_960_column_right_margin = expr( int(@margin / 2));
+	@_dss_960_column_left_margin = expr( @_dss_960_column_both_margin - 
+										 @_dss_960_column_right_margin);
+	@_dss_960_column_all_width = expr( @_dss_960_column_both_margin + 
+									   @_dss_960_column_width );
+	@_dss_960_layout_width = expr( @columns * @_dss_960_column_all_width );
+	
+	margin-left: auto;
+	margin-right: auto;
+	width: @_dss_960_layout_width;
+
+	@_dss_960_container_init = 1;
+	
+	if(@debug, { background: gridBG(@_dss_960_column_width, @_dss_960_column_both_margin); })
+	@clearfix;
+}
+
+/** 
+	Define @grid12 alias mixin 
+*/
+@grid12 = (@debug = 0)
+{
+	@grid(12,60px,20px,@debug)
+};
+
+/** 
+	Define default 16 column layout 
+*/
+@grid16 = (@debug = 0)
+{
+	@grid(16, 40px, 20px, @debug);
+}
+
+/**
+Column mixin.
+
+@columns		Number of layout columns the grid will occupy.
+*/
+@column = (@columns = 1, @width_adjust = 0px) {
+	if(expr( !@_dss_960_container_init ), error("Grid not inialized in @column."))
+	
+	display: inline;
+	float: left;
+	width: expr( @_dss_960_column_all_width * @columns - 
+				 @_dss_960_column_both_margin + @width_adjust );
+	margin-left: @_dss_960_column_left_margin; 
+	margin-right: @_dss_960_column_right_margin;
+}
+
+/**
+Mixin to pull the grid to the left, maybe leading to a different visual order than source order.
+
+@columns		Number of layout columns to pull the grid column to the left.
+*/
+@pull = (@columns = 1) {
+	if(expr( !@_dss_960_container_init ), error("Grid not inialized in @pull.")) 
+	position: relative;
+	left: expr( - @columns * @_dss_960_column_all_width );
+}
+
+/**
+Mixin to push the grid to the right, maybe leading to a different visual order than source order.
+
+@columns		Number of layout columns to pull the grid column to the right.
+*/
+@push = (@columns = 1) {
+	if(expr( !@_dss_960_container_init ), error("Grid not inialized in @push.")) 
+	position: relative;
+	left: expr( @columns * @_dss_960_column_all_width );
+}
+
+/**
+Creates empty columns before a grid column.
+
+@columns		Number of empty columns before
+*/
+@prefix = (@columns = 1) {
+	if(expr( !@_dss_960_container_init ), error("Grid not inialized in @prefix.")) 
+	padding-left: expr( @columns * @_dss_960_column_all_width);
+}
+
+/**
+Creates empty columns after a grid column.
+
+@columns		Number of empty columns after
+*/
+@suffix = (@columns = 1) {
+	if(expr( !@_dss_960_container_init ), error("Grid not inialized in @suffix.")) 
+	padding-right: expr( @columns * @_dss_960_column_all_width);
+}
+
+/**
+Mixin for the first/leftmost child grid of a parent grid
+*/
+@alpha = {
+	margin-left: 0;
+} 
+
+/**
+Mixin for the last / rightmost child grid of a parent grid
+*/
+@omega = {
+	margin-right: 0;
+}
+
+
+#test
+{
+	@grid12();
+} 
+
+#testcol
+{
+	@column(6);
+}
